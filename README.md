@@ -16,3 +16,8 @@
 
 2. Container up 
      ./upNetwork.sh
+
+3. 오류시 
+     channel-artifacts 삭제
+     crypto-config 삭제 
+     ./basic.sh
