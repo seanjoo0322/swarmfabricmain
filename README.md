@@ -8,7 +8,7 @@
      docker swarm init --advertise-addr <host-1 ip address>
      docker swarm join-token manager
      
-     On Host 2, 3 and 4,
+     On Host 2
      <output from join-token manager> --advertise-addr <host n ip>
       
      On host 1,
