@@ -10,7 +10,7 @@
      
      On Host 2, 3 and 4,
      <output from join-token manager> --advertise-addr <host n ip>
-     
+      
      On host 1,
      docker network create --attachable --driver overlay first-network
 
