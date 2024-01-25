@@ -13,6 +13,10 @@ infoln() {
     echo  # Add an extra echo to insert a newline
 }
 
+infoln "org names"
+read org1 org2
+
+
 # Example usage:
 infoln "Loading Configuration"
 cryptogen generate --config=./crypto-config.yaml
@@ -24,10 +28,10 @@ infoln "Creating config block"
 configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/mychannel.tx -channelID mychannel
 
 infoln "Org 1 Anchor peer"
-configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org1MSPanchors.tx -channelID mychannel -asOrg Org1MSP
+configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org1MSPanchors.tx -channelID mychannel -asOrg ${org1}MSP
 
 infoln "Org 2 Anchor Peer"
-configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org2MSPanchors.tx -channelID mychannel -asOrg Org2MSP
+configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org2MSPanchors.tx -channelID mychannel -asOrg ${org2}MSP
 
 infoln "Creating connection-org1 and connection-org2"
 ./explorerSupporter.sh
