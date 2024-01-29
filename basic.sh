@@ -1,7 +1,4 @@
 #!/bin/bash
-
-# 이미 기본 파일 만들어놓아서 사용할 필요가 없음. 
-
 # Set environment variables
 export PATH="${PWD}/../bin:$PATH"
 export FABRIC_CFG_PATH="${PWD}"
@@ -13,9 +10,25 @@ infoln() {
     echo  # Add an extra echo to insert a newline
 }
 
-infoln "org names"
-read org1 org2
+# Function to ask for number and names of organizations
+askForOrgs() {
+    infoln "How many organizations do you want to configure?"
+    read orgCount
 
+    for ((i=1; i<=orgCount; i++))
+    do
+        infoln "Enter the name of organization $i"
+        read orgName
+        orgs+=("$orgName")
+    done
+}
+
+# Ask for channel name
+infoln "What is your channel name?"
+read channelName
+
+# Ask for organizations
+askForOrgs
 
 # Example usage:
 infoln "Loading Configuration"
@@ -25,13 +38,14 @@ infoln "Creating Genesis Block"
 configtxgen -profile SampleMultiNodeEtcdRaft -channelID system-channel -outputBlock ./channel-artifacts/genesis.block
 
 infoln "Creating config block"
-configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/mychannel.tx -channelID mychannel
+configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/${channelName}.tx -channelID $channelName
 
-infoln "Org 1 Anchor peer"
-configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org1MSPanchors.tx -channelID mychannel -asOrg ${org1}MSP
-
-infoln "Org 2 Anchor Peer"
-configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org2MSPanchors.tx -channelID mychannel -asOrg ${org2}MSP
+# Generate Anchor Peer updates for each organization
+for org in "${orgs[@]}"
+do
+    infoln "Org $org Anchor Peer"
+    configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${org}MSPanchors.tx -channelID $channelName -asOrg ${org}MSP
+done
 
 infoln "Creating connection-org1 and connection-org2"
 ./explorerSupporter.sh

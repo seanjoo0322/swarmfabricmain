@@ -22,10 +22,10 @@ read org_name
 echo "Enter the number of peers:"
 read peer_count
 
-echo "What number is this orderer? If one no input needed" 
+echo "What number is this orderer(0,2,3,4,5~) NO "1"? basic orderer no input needed" 
 read orderer_num
 
-echo "What port number is this orderer? IF this was orderer was one it MUST be 7050"
+echo "What port number is this orderer? IF this was orderer was basic it MUST be 7050"
 read orderer_port
 
 # Create the docker-compose.yaml file

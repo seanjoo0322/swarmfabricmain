@@ -33,8 +33,10 @@ Organizations:
 ' > configtx.yaml
 
 for ((i=0; i<org_count; i++)); do 
-    infoln "What is the name of your Org"
+    infoln "What is the name of your Org(First letter should be capital)"
     read orgname
+    infoln "What is the name of your Org(Without capitalization)"
+    read orgnamewo
     infoln "Main port for anchor peer"
     read anchorpeerport
     infoln "anchor peer name" 
@@ -43,7 +45,7 @@ for ((i=0; i<org_count; i++)); do
     - &${orgname}
         Name: ${orgname}MSP
         ID: ${orgname}MSP
-        MSPDir: crypto-config/peerOrganizations/${orgname}.example.com/msp
+        MSPDir: crypto-config/peerOrganizations/${orgnamewo}.example.com/msp
         Policies:
             Readers:
                 Type: Signature
@@ -58,7 +60,7 @@ for ((i=0; i<org_count; i++)); do
                 Type: Signature
                 Rule: \"OR('${orgname}MSP.peer')\"
         AnchorPeers:
-            - Host: $anchorpeername.${orgname}.example.com
+            - Host: $anchorpeername.${orgnamewo}.example.com
               Port: $anchorpeerport
     " >> configtx.yaml
     org_profiles="${org_profiles}                      - *${orgname}"$'\n'
@@ -75,7 +77,7 @@ orderer_addresses=""
 orderer_addressesone=""
 orderer_consenters=""
 
-for ((i=1; i<=(orderer_count-1); i++)); do 
+for ((i=2; i<=(orderer_count); i++)); do 
     infoln "What is the port for orderer$i?"
     read ordererport
 

@@ -5,8 +5,9 @@ echo "Type 1 or 2"
 read network
 
 if [ "$network" == "1" ]; then
-    docker-compose -f docker-compose-testingnetwork1.yaml down
+    docker-compose -f docker-compose_org1.yaml down
     docker rmi $(docker images -q 'dev-*')
+    rm -rf ./channel-artiacts ./crypto-config
     docker volume rm swarmfabric_orderer.example.com swarmfabric_peer1.org1.example.com swarmfabric_peer0.org1.example.com
 elif [ "$network" == "2" ]; then
     docker-compose -f docker-compose-testingnetwork2.yaml down
