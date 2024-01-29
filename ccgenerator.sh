@@ -5,9 +5,12 @@ generate_org_yaml() {
     local org_name=$1
     local peers=($2) # Assumes peer names are space-separated
 
+    # Capitalize the first letter of org_name for the Name field
+    local org_name_capitalized="${org_name^}"
+
     # Start the organization YAML
-    echo "  - Name: $org_name"
-    echo "    Domain: $org_name.example.com"
+    echo "  - Name: $org_name_capitalized"
+    echo "    Domain: ${org_name,,}.example.com"  # Convert org_name to lowercase and add the domain
     echo "    EnableNodeOUs: true"
     echo "    Specs:"
 
@@ -21,11 +24,12 @@ generate_org_yaml() {
     echo "      Count: 1"
 }
 
+
 generate_ord_yaml() {
     local peers=$1 # Number of orderers
     # Loop over each orderer and add it to the YAML
-    for ((i=0; i < $peers; i++)); do
-        if [ $i -eq 0 ]; then
+    for ((i=1; i < ($peers + 1); i++)); do
+        if [ $i -eq 1 ]; then
             echo "      - Hostname: orderer" >> crypto-config.yaml
         else
             echo "      - Hostname: orderer$i" >> crypto-config.yaml
