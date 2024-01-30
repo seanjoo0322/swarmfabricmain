@@ -7,12 +7,55 @@ infoln() {
 }
 
 
+cliAdd() {
+  echo "Type port num again for ${peer_names[0]}"
+  read portnum
+
+  echo "
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:latest
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=${peer_names[0]}.$org_name.example.com:${portnum}
+      - CORE_PEER_LOCALMSPID=${capitalorg}MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/users/Admin@$org_name.example.com/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./../chaincode/:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config
+        - ../scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts    
+    depends_on:
+    # This part should be modified during production
+      - ${peer_names[0]}.$org_name.example.com
+      - ${peer_names[1]}.$org_name.example.com
+      - orderer.example.com
+    networks:
+      - test
+    " >> docker-compose_$org_name.yaml
+}
+
+
 infoln "Please understand that Orderer other than basic orderer should have some parts removed "
 infoln "Such as ordererports that is biggesr than 10000,        - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:17050
 "
 infoln "Please understand that port 7050 8050 should not be touched" 
  
-sleep 2
+
+
 
 # Ask for organization name
 echo "Enter organization name:"
@@ -116,7 +159,7 @@ for ((i = 0; i < peer_count; i++)); do
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:$port2
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=${peer_names[$i]}.$org_name.example.com:$port1
       - CORE_PEER_GOSSIP_BOOTSTRAP=${peer_names[$i]}.$org_name.example.com:$port1
-      - CORE_PEER_LOCALMSPID=${org_name}MSP
+      - CORE_PEER_LOCALMSPID=${capitalorg}MSP
       - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:1$port1
     volumes:
         - /var/run/docker.sock:/host/var/run/docker.sock
@@ -145,6 +188,16 @@ replace_volume_name() {
 
 
 replace_volume_name "first-network"
+
+
+echo "Is this the main organization? (y/n)"
+read yesno
+
+if [[ "$yesno" == "y" ]]; then
+  echo 'Adding CLI'
+  cliAdd
+fi
+
 
 echo "Docker Compose file has been generated: docker-compose_$org_name.yaml"
 
