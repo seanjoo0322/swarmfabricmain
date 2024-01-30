@@ -9,14 +9,18 @@
 사용방법: 
 
 1. 기본 생생
+
    ./ccgenerator.sh
+
    ./configtxGenerator.sh
+
    ./basic.sh
 
-2. org 생성(각 VM마다 하나씩)
-     ./yamlGenerator.sh
+3. org 생성(각 VM마다 하나씩)
+
+   ./yamlGenerator.sh
    
-4. 스웜 세팅
+5. 스웜 세팅
      docker swarm init --advertise-addr <host-1 ip address>
      docker swarm join-token manager
      
@@ -26,7 +30,7 @@
      On host 1,
      docker network create --attachable --driver overlay first-network
 
-5. Container up 
+6. Container up 
      ./upNetwork.sh
 
  오류시 
