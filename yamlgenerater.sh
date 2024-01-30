@@ -18,6 +18,7 @@ sleep 2
 echo "Enter organization name:"
 read org_name
 
+capitalorg="$(tr '[:lower:]' '[:upper:]' <<< ${org_name:0:1})${org_name:1}"
 # Ask for number of peers
 echo "Enter the number of peers:"
 read peer_count
