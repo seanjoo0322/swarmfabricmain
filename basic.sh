@@ -17,7 +17,7 @@ askForOrgs() {
 
     for ((i=1; i<=orgCount; i++))
     do
-        infoln "Enter the name of organization $i"
+        infoln "First letter should be capital. Enter the name of organization $i"
         read orgName
         orgs+=("$orgName")
     done
@@ -47,5 +47,5 @@ do
     configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${org}MSPanchors.tx -channelID $channelName -asOrg ${org}MSP
 done
 
-infoln "Creating connection-org1 and connection-org2"
-./explorerSupporter.sh
+#infoln "Creating connection-org1 and connection-org2"
+#./explorerSupporter.sh
