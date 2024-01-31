@@ -97,8 +97,6 @@ done
 infoln "Checking Commit Readiness if not true true, ur doomed"
 docker exec cli peer lifecycle chaincode checkcommitreadiness --channelID ${channelName} --name ${chaincodeName} --version 1 --sequence 1
 
-exit 0;
-
 
 infoln "Step 3: Commiting Chaincode.." 
 infoln "Enter the number of organizations:"
