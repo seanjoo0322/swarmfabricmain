@@ -26,10 +26,10 @@ cliAdd() {
       - CORE_PEER_ADDRESS=${peer_names[0]}.$org_name.example.com:${portnum}
       - CORE_PEER_LOCALMSPID=${capitalorg}MSP
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${peer_names[0]}.example.com/users/Admin@$org_name.example.com/msp
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/$org_name.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/$org_name.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/$org_name.example.com/peers/${peer_names[0]}.$org_name.example.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/$org_name.example.com/users/Admin@$org_name.example.com/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
