@@ -29,7 +29,7 @@
 6. Container up 
      ./upNetwork.sh
 
- 오류시 
+ 오류시 ss
      channel-artifacts 삭제
      crypto-config 삭제 
      ./basic.sh
