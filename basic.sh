@@ -10,25 +10,25 @@ infoln() {
     echo  # Add an extra echo to insert a newline
 }
 
-# Function to ask for number and names of organizations
-askForOrgs() {
-    infoln "How many organizations do you want to configure?"
-    read orgCount
-
-    for ((i=1; i<=orgCount; i++))
-    do
-        infoln "First letter should be capital. Enter the name of organization $i"
-        read orgName
-        orgs+=("$orgName")
-    done
+# Function to parse orgs_and_peers.txt for organization names
+parseOrgs() {
+    # Initialize an empty array to hold organization names
+    orgs=()
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ $line =~ Organization:\ (.+)$ ]]; then
+            # Capitalize the first letter of the organization name and append "MSP"
+            orgName="${BASH_REMATCH[1]^}MSP"
+            orgs+=("$orgName")
+        fi
+    done < orgs_and_peers.txt
 }
 
 # Ask for channel name
 infoln "What is your channel name?"
 read channelName
 
-# Ask for organizations
-askForOrgs
+# Parse organizations from orgs_and_peers.txt
+parseOrgs
 
 # Example usage:
 infoln "Loading Configuration"
@@ -41,11 +41,10 @@ infoln "Creating config block"
 configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/${channelName}.tx -channelID $channelName
 
 # Generate Anchor Peer updates for each organization
-for org in "${orgs[@]}"
+for orgMSP in "${orgs[@]}"
 do
-    infoln "Org $org Anchor Peer"
-    configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${org}MSPanchors.tx -channelID $channelName -asOrg ${org}MSP
+    # Extract just the org name from orgMSP for display purposes
+    orgName="${orgMSP%MSP}"
+    infoln "$orgName Anchor Peer"
+    configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgMSP}anchors.tx -channelID $channelName -asOrg $orgMSP
 done
-
-#infoln "Creating connection-org1 and connection-org2"
-#./explorerSupporter.sh

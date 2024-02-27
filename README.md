@@ -10,17 +10,13 @@
 
 1. 기본 생생
 
-   ./ccgenerator.sh
-
-   ./configtxGenerator.sh
-
-   ./basic.sh
+   ./run.sh
 
 3. org 생성(각 VM마다 하나씩)
 
    ./yamlGenerator.sh
    
-5. 스웜 세팅
+5. 스웜 세팅(Optional)
      docker swarm init --advertise-addr <host-1 ip address>
      docker swarm join-token manager
      
@@ -37,3 +33,7 @@
      channel-artifacts 삭제
      crypto-config 삭제 
      ./basic.sh
+
+7. Container down
+   ./downNetwork
+# swarmfabricmain

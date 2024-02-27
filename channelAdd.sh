@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Prompt the user to input the channel name\
-
-
-# Remove any leading or trailing whitespace from the input
-
 # Function for printing colored messages
 infoln() {
     echo
@@ -12,70 +7,55 @@ infoln() {
     echo  # Add an extra echo to insert a newline
 }
 
-
-infoln "Type in Channel Name"
+# Prompt the user to input the channel name and remove leading/trailing whitespace
+infoln "Type in Channel Name:"
 read channelName
+channelName=$(echo $channelName | xargs)
 
-infoln "Creating Channel"
+infoln "Creating Channel..."
 docker exec cli peer channel create -o orderer.example.com:7050 -c ${channelName} -f ./channel-artifacts/${channelName}.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
-echo "Type in how many peers are in org1"
-read num_orgs
+# Initialize associative arrays to store organization and peer information
+declare -A orgPeers
 
-infoln "Adding ${peername}.org1"
-docker exec cli peer channel join -b ${channelName}.block
-
-for ((i=1; i<num_orgs; i++))
-do
-    echo "Type in your peer${i} and org${i} name and port number(3 input)"
-    read peerone orgone portnumber
-    orgcapital="$(tr '[:lower:]' '[:upper:]' <<< ${orgone:0:1})${orgone:1}"
-    docker exec -e CORE_PEER_ADDRESS=${peerone}.${orgone}.example.com:${portnumber} -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${orgone}.example.com/peers/${peerone}.${orgone}.example.com/tls/ca.crt cli peer channel join -b ${channelName}.block
-done
-
-
-
-infoln "Anchor Peer setting as ${peername} Org1"
-docker exec cli peer channel update -o orderer.example.com:7050 -c ${channelName} -f ./channel-artifacts/${orgcapital}MSPanchors.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
-
-
-
-
-# Prompt the user for the number of organizations
-echo -n "Enter the number of organizations: other than org1 "
-read num_orgs
-
-# Loop through each organization
-for ((org_num=1; org_num<=$num_orgs; org_num++)); do
-    echo -n "Enter the name of organization $org_num: "
-    read orgname
-
-    capitalorg="$(tr '[:lower:]' '[:upper:]' <<< ${orgname:0:1})${orgname:1}"
-
-    # Prompt the user for the number of peers for this organization
-    echo -n "Enter the number of peers for $orgname: "
-    read num_peers
-
-    # Loop through each peer for this organization
-    for ((peer_num=0; peer_num<$num_peers; peer_num++)); do
-        echo -n "Enter the name for peer $peer_num in $orgname: "
-        read peername
-        echo -n "Enter the port number for $peername in $orgname: "
-        read portnumber
-
-        # Construct and execute the Docker command
-        docker exec -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${orgname}.example.com/users/Admin@${orgname}.example.com/msp -e CORE_PEER_ADDRESS=${peername}.${orgname}.example.com:${portnumber} -e CORE_PEER_LOCALMSPID="${capitalorg}MSP" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${orgname}.example.com/peers/${peername}.${orgname}.example.com/tls/ca.crt cli peer channel join -b ${channelName}.block
-
-        echo "Added Sucessfully"
-        # Uncomment the next line to actually execute the Docker command
-        # eval "$docker_command"
-    
-        if [ "$peer_num" -eq 0 ]; then    
-        infoln "Anchor Peer setting as ${peername} ${orgname}"
-        docker exec -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${orgname}.example.com/users/Admin@${orgname}.example.com/msp -e CORE_PEER_ADDRESS=${peername}.${orgname}.example.com:${portnumber} -e CORE_PEER_LOCALMSPID="${capitalorg}MSP" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${orgname}.example.com/peers/${peername}.${orgname}.example.com/tls/ca.crt cli peer channel update -o orderer.example.com:7050 -c ${channelName} -f ./channel-artifacts/${capitalorg}MSPanchors.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+# Read and process orgs_and_peers.txt
+while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ $line =~ ^Organization:\ (.+)$ ]]; then
+        currentOrg="${BASH_REMATCH[1],,}"
+        orgPeers[$currentOrg]=""
+    elif [[ $line =~ ([a-z]+)\.([a-z]+)\.example\.com:([0-9]+) ]]; then
+        peerName="${BASH_REMATCH[1]}"
+        peerPort="${BASH_REMATCH[3]}"
+        # Append peer information for the current organization
+        if [ -z "${orgPeers[$currentOrg]}" ]; then
+            orgPeers[$currentOrg]="${peerName}:${peerPort}"
+        else
+            orgPeers[$currentOrg]+=",${peerName}:${peerPort}"
         fi
-        
+    fi
+done < orgs_and_peers.txt
+
+# Join peers to the channel and set anchor peers
+for org in "${!orgPeers[@]}"; do
+    IFS=',' read -r -a peers <<< "${orgPeers[$org]}"
+    for peerInfo in "${peers[@]}"; do
+        IFS=':' read -r -a peerDetails <<< "$peerInfo"
+        peerName="${peerDetails[0]}"
+        peerPort="${peerDetails[1]}"
+
+        # Properly capitalize org for MSP ID
+        orgCapitalized="$(tr '[:lower:]' '[:upper:]' <<< ${org:0:1})${org:1}"
+        mspID="${orgCapitalized}MSP"
+
+        infoln "Adding ${peerName}.${org}.example.com to the channel..."
+        docker exec -e CORE_PEER_LOCALMSPID="${mspID}" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${org}.example.com/peers/${peerName}.${org}.example.com/tls/ca.crt -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${org}.example.com/users/Admin@${org}.example.com/msp -e CORE_PEER_ADDRESS=${peerName}.${org}.example.com:${peerPort} cli peer channel join -b ${channelName}.block
+
+        # Only set the first peer as the anchor peer
+        if [[ ${peerDetails[0]} == ${peers[0]%%:*} ]]; then
+            infoln "Setting anchor peer for ${orgCapitalized}..."
+            docker exec -e CORE_PEER_LOCALMSPID="${mspID}" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${org}.example.com/peers/${peerName}.${org}.example.com/tls/ca.crt -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/${org}.example.com/users/Admin@${org}.example.com/msp -e CORE_PEER_ADDRESS=${peerName}.${org}.example.com:${peerPort} cli peer channel update -o orderer.example.com:7050 -c ${channelName} -f ./channel-artifacts/${mspID}anchors.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+        fi
     done
 done
 
-
+infoln "Channel ${channelName} setup completed."

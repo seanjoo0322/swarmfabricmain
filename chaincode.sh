@@ -137,7 +137,7 @@ cmd="docker exec cli peer lifecycle chaincode commit \
 ${peerAddresses} \
 ${tlsRootCertFiles} \
 --channelID ${channelName} \
---name basic \
+--name ${chaincodeName} \
 --version 1 \
 --sequence 1"
 
@@ -145,8 +145,8 @@ invoke="docker exec cli peer chaincode invoke \
 -o orderer2.example.com:8050 \
 --tls true \
 --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/msp/tlscacerts/tlsca.example.com-cert.pem \
--C space \
--n basic \
+-C ${channelName} \
+-n ${chaincodeName} \
 ${peerAddresses} \
 ${tlsRootCertFiles} \
 -c '{\"function\":\"InitLedger\",\"Args\":[]}'"
@@ -159,5 +159,4 @@ docker exec cli peer lifecycle chaincode querycommitted --channelID ${channelNam
 
 infoln "Invoking main code" 
 eval "$invoke" 
-
 

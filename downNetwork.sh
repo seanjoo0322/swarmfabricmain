@@ -14,4 +14,4 @@ read peer0 peer1
 
 echo "Which orderer? Leave blank for basic"
 read ordnum
-docker volume rm swarmfabric_orderer${ordnum}.example.com swarmfabric_${peer0}.${network}.example.com swarmfabric_${peer1}.${network}.example.com
+docker volume rm swarmfabricmain_orderer${ordnum}.example.com swarmfabricmain_${peer0}.${network}.example.com swarmfabricmain_${peer1}.${network}.example.com
